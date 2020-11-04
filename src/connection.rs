@@ -165,23 +165,8 @@ impl Connection {
         let mut hist = Histogram::<u64>::new(4).unwrap();
 
         // maps to record Publish and PubAck of messages. PKID acts as key
-        let mut pkids_publish:  BTreeMap::<u16, std::time::Instant> = BTreeMap::new();
-        let mut pub_acks: BTreeMap::<u16, std::time::Instant> = BTreeMap::new();
-
-        // Sink connections are single subscription connections
-        if self.sink.is_none() {
-            for i in 0..publishers {
-                let topic = format!("hello/{}/{}/world", self.id, i);
-                let client = self.client.clone();
-                task::spawn(async move {
-                    requests(topic, payload_size, count, client, qos, delay).await;
-                });
-            }
-        } else {
-            acks_expected = 0;
-            incoming_expected =
-                self.config.connections * self.config.count * self.config.publishers;
-        }
+        let mut pkids_publish: BTreeMap<u16, std::time::Instant> = BTreeMap::new();
+        let mut pub_acks: BTreeMap<u16, std::time::Instant> = BTreeMap::new();
 
         // Sink connections are single subscription connections
         if self.sink.is_none() {
