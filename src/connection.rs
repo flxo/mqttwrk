@@ -204,17 +204,23 @@ impl Connection {
             }
 
             // println!("Id = {}, {:?}", id, incoming);
-
-            if let Event::Incoming(v) = event {
-                match v {
-                    Incoming::PubAck(_pkid) => acks_count += 1,
+            match event {
+                Event::Incoming(v) => match v {
+                    Incoming::PubAck(p) => {
+                        pub_acks.insert(p.pkid, Instant::now());
+                        acks_count += 1;
+                    }
                     Incoming::Publish(_publish) => incoming_count += 1,
                     Incoming::PingResp => {}
                     incoming => {
                         error!("Id = {}, Unexpected incoming packet = {:?}", id, incoming);
                         break;
                     }
+                },
+                Event::Outgoing(Outgoing::Publish(pkid)) => {
+                    pkids_publish.insert(pkid, Instant::now());
                 }
+                _ => (),
             }
 
             if !outgoing_done && acks_count >= acks_expected {
@@ -249,15 +255,20 @@ impl Connection {
             reconnects,
         );
 
-        for (pkid, ack_time)  in  pub_acks.into_iter() {
+        for (pkid, ack_time) in pub_acks.into_iter() {
             let publish_time = pkids_publish.get(&pkid).unwrap();
-            let latency = publish_time.duration_since(ack_time).as_millis();
+            let latency = ack_time.duration_since(*publish_time).as_millis();
             hist.record(latency as u64).unwrap();
-
         }
         println!("# of samples          : {}", hist.len());
-        println!("99.999'th percentile  : {}", hist.value_at_quantile(0.999999));
-        println!("99.99'th percentile   : {}", hist.value_at_quantile(0.99999));
+        println!(
+            "99.999'th percentile  : {}",
+            hist.value_at_quantile(0.999999)
+        );
+        println!(
+            "99.99'th percentile   : {}",
+            hist.value_at_quantile(0.99999)
+        );
         println!("90 percentile         : {}", hist.value_at_quantile(0.90));
         println!("50 percentile         : {}", hist.value_at_quantile(0.5));
 
