@@ -1,4 +1,3 @@
-use async_channel::Sender;
 use std::collections::BTreeMap;
 use std::sync::Arc;
 use std::time::Instant;
@@ -7,9 +6,9 @@ use std::{fs, io};
 use crate::Config;
 
 use hdrhistogram::Histogram;
-use rumqttc::*;
+use rumqttc::{AsyncClient, Event, EventLoop, Incoming, MqttOptions, Outgoing, QoS};
 use thiserror::Error;
-use tokio::sync::Barrier;
+use tokio::sync::{mpsc::Sender, Barrier};
 use tokio::time::Duration;
 use tokio::{pin, select, task, time};
 
@@ -271,7 +270,7 @@ impl Connection {
         println!("50 percentile         : {}", hist.value_at_quantile(0.5));
 
         // if publisher, send the histogram to main
-        if let Some(sender) = &self.sender {
+        if let Some(ref mut sender) = self.sender {
             sender.send(hist).await.unwrap();
         }
     }

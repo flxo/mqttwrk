@@ -18,7 +18,7 @@ extern crate log;
 
 use futures::stream::StreamExt;
 use std::sync::Arc;
-use tokio::sync::Barrier;
+use tokio::sync::{mpsc, Barrier};
 use tokio::task;
 
 mod connection;
@@ -114,7 +114,7 @@ async fn main() {
     };
     let barrier = Arc::new(Barrier::new(connections));
     let mut handles = futures::stream::FuturesUnordered::new();
-    let (tx, rx) = async_channel::bounded::<Histogram<u64>>(config.connections);
+    let (tx, mut rx) = mpsc::channel::<Histogram<u64>>(config.connections);
 
     // We synchronously finish connections and subscriptions and then spawn
     // connection start to perform publishes concurrently.

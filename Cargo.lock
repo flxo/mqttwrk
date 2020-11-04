@@ -554,7 +554,6 @@ dependencies = [
 name = "mqttwrk"
 version = "0.1.0"
 dependencies = [
- "async-channel",
  "futures",
  "hdrhistogram",
  "jemallocator",
