@@ -1,18 +1,18 @@
+use async_channel::Sender;
+use std::collections::BTreeMap;
 use std::sync::Arc;
 use std::time::Instant;
 use std::{fs, io};
-use std::collections::BTreeMap;
-use async_channel::Sender;
 
 use crate::Config;
 
+use hdrhistogram::Histogram;
 use rumqttc::*;
 use thiserror::Error;
 use tokio::sync::Barrier;
 use tokio::time::Duration;
-use hdrhistogram::Histogram;
-use whoami;
 use tokio::{pin, select, task, time};
+use whoami;
 
 const ID_PREFIX: &str = "rumqtt";
 
@@ -22,7 +22,7 @@ pub(crate) struct Connection {
     client: AsyncClient,
     eventloop: EventLoop,
     sink: Option<String>,
-    sender: Option<Sender::<Histogram::<u64>>>,
+    sender: Option<Sender<Histogram<u64>>>,
 }
 
 #[derive(Error, Debug)]
@@ -40,7 +40,7 @@ impl Connection {
         id: usize,
         sink: Option<String>,
         config: Arc<Config>,
-        sender: Option<Sender::<Histogram::<u64>>>
+        sender: Option<Sender<Histogram<u64>>>,
     ) -> Result<Connection, ConnectionError> {
         let id = if sink.is_none() {
             format!("{}-{:05}", ID_PREFIX, id)
@@ -53,7 +53,6 @@ impl Connection {
         mqttoptions.set_inflight(config.max_inflight);
         mqttoptions.set_connection_timeout(config.conn_timeout);
         mqttoptions.set_max_request_batch(10);
-        
 
         if let Some(ca_file) = &config.ca_file {
             let ca = fs::read(ca_file)?;
@@ -119,7 +118,7 @@ impl Connection {
             client,
             eventloop,
             sink,
-            sender
+            sender,
         })
     }
 
@@ -307,7 +306,6 @@ async fn requests(
     }
 }
 
-
 /// get QoS level. Default is AtLeastOnce.
 fn get_qos(qos: i16) -> QoS {
     match qos {
@@ -317,4 +315,3 @@ fn get_qos(qos: i16) -> QoS {
         _ => QoS::AtLeastOnce,
     }
 }
-
