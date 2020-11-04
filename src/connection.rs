@@ -12,7 +12,6 @@ use thiserror::Error;
 use tokio::sync::Barrier;
 use tokio::time::Duration;
 use tokio::{pin, select, task, time};
-use whoami;
 
 const ID_PREFIX: &str = "rumqtt";
 
@@ -76,7 +75,7 @@ impl Connection {
             subscriber_count = 1;
         }
 
-        let mut sclient = client.clone();
+        let sclient = client.clone();
         task::spawn(async move {
             let qos = get_qos(sconfig.qos);
 
@@ -283,7 +282,7 @@ async fn requests(
     topic: String,
     payload_size: usize,
     count: usize,
-    mut client: AsyncClient,
+    client: AsyncClient,
     qos: QoS,
     delay: u64,
 ) {

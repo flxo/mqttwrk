@@ -12,14 +12,12 @@ edition = "2018"
 rumqttc = "0.1"
 tokio = { version = "0.2", features = ["full"] }
 rand = "0.7"
-argh = "0.1"
 futures = "0.3"
 log = "0.4"
 thiserror = "1"
 pretty_env_logger = "0.4"
 jemallocator = { version = "0.3.2", optional = true }
 hdrhistogram = "7.1.0"
-whoami = "0.9.0"
 async-channel = "1"
 structopt = "0.3.20"
 

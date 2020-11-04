@@ -16,12 +16,8 @@ static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 #[macro_use]
 extern crate log;
 
-use std::sync::Arc;
-
-use argh::FromArgs;
-use async_channel;
-use futures;
 use futures::stream::StreamExt;
+use std::sync::Arc;
 use tokio::sync::Barrier;
 use tokio::task;
 
